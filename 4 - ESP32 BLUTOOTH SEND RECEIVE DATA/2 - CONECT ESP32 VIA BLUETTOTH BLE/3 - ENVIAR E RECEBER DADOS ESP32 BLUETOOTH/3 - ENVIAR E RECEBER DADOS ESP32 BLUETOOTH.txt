@@ -1,0 +1,247 @@
+
+###########################
+
+
+código em esp32 code
+
+
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
+//https://www.fernandok.com/2018/08/esp32-bluetooth-low-energy.html
+
+BLEServer *pServer = NULL;
+BLECharacteristic *pCharacteristic;
+bool deviceConnected = false;
+String valor_return = "";
+String valor;
+
+class MyServerCallbacks : public BLEServerCallbacks {  
+  void onConnect(BLEServer* pServer) {
+    deviceConnected = true;
+    Serial.println("Device connected");   
+  }
+
+  void onDisconnect(BLEServer* pServer) {
+    deviceConnected = false;
+    Serial.println("Device disconnected");
+
+    // Limpeza de variáveis
+    valor_return = "";  // Limpa o valor acumulado
+
+    // Reiniciar a publicidade para novos dispositivos
+    pServer->startAdvertising();
+}
+};
+
+class MyCallbacks : public BLECharacteristicCallbacks {
+ 
+    void onWrite(BLECharacteristic *pCharacteristic) {
+    Serial.println("onWrite");
+
+    // Obtém o valor da característica BLE como String do Arduino
+    String value = pCharacteristic->getValue().c_str();   
+
+    if (value.length() > 0) {      
+      String valor = String(value);
+
+      valor_return += valor;
+      pCharacteristic->setValue(valor_return.c_str());  // Atualizando o valor da característica com valor_return
+
+      Serial.println("onWrite2");
+      Serial.println(valor_return);
+
+      if(valor_return == "1"){
+        digitalWrite(2, HIGH);
+        delay(1000);
+        digitalWrite(4, LOW);        
+      };
+
+      if(valor_return == "2"){
+        digitalWrite(4, HIGH);
+        delay(1000);        
+        digitalWrite(2, LOW);
+      };
+
+      //valor_return = "";//tem que limpar pq se nao fica concatenando cada vez que recebe um dado     
+
+    }
+  }
+
+  void onRead(BLECharacteristic *pCharacteristic) {
+    Serial.println("onRead");
+    if (valor_return == "1") {
+      pCharacteristic->setValue("led 2 high");
+    } else {
+      pCharacteristic->setValue("No action");
+    }
+
+    valor_return = "";//tem que limpar pq se nao fica concatenando cada vez que recebe um dado   
+  }
+
+
+//   void onRead(BLECharacteristic *pCharacteristic) {
+//     Serial.println("Characteristic read");
+//     // Atualizar o valor da característica antes de ser lido
+//     pCharacteristic->setValue("Dynamic response from ESP32");
+//   }
+};
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(2, OUTPUT);
+  pinMode(4, OUTPUT);
+  
+  BLEDevice::init("ESP32_BLEE");
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  BLEService *pService = pServer->createService(BLEUUID("4fafc201-1fb5-459e-8fcc-c5c9c331914b"));
+
+  pCharacteristic = pService->createCharacteristic(
+                      BLEUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8"),
+                      BLECharacteristic::PROPERTY_READ |
+                      BLECharacteristic::PROPERTY_WRITE |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  pCharacteristic->setCallbacks(new MyCallbacks());
+  pCharacteristic->addDescriptor(new BLE2902());
+
+  pService->start();
+  BLEAdvertising *pAdvertising = pServer->getAdvertising();
+  pAdvertising->start();
+  
+  Serial.println("Waiting for a connection...");
+}
+
+void loop() {
+  // Do other tasks if needed
+}
+
+
+######################################################################
+
+
+código em ionic -> src\app\home\home.page.ts
+
+
+import { Component, OnInit } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { BleClient } from '@capacitor-community/bluetooth-le';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+})
+export class HomePage implements OnInit {
+
+  devices: any[] = [];
+  connectedDevice: any = null;
+  serviceUuid: string = '4fafc201-1fb5-459e-8fcc-c5c9c331914b'; // UUID do serviço
+  characteristicUuid: string = 'beb5483e-36e1-4688-b7f5-ea07361b26a8'; // UUID da característica
+
+  constructor(private platform: Platform) { }
+
+  ngOnInit() {
+    this.platform.ready().then(() => {
+      this.initializeBluetooth();
+    });
+  }
+
+  async initializeBluetooth() {
+    try {
+      await BleClient.initialize();
+      console.log('Bluetooth initialized');
+      this.checkPermissions();
+    } catch (error) {
+      console.error('Error initializing Bluetooth', error);
+    }
+  }
+
+  async checkPermissions() {
+    console.log('Checking permissions');
+    // Adicione a lógica para verificar e solicitar permissões se necessário
+  }
+
+  async scanDevices() {
+    try {
+      const result = await BleClient.requestDevice({ allowDuplicates: false, optionalServices: [this.serviceUuid] });
+      this.devices = [result];
+      console.log('Scanned devices', this.devices);
+    } catch (error) {
+      console.error('Error scanning devices', error);
+    }
+  }
+
+  async connectToDevice(device: any) {
+    try {
+      await BleClient.connect(device.deviceId);
+      this.connectedDevice = device;
+      console.log('Connected to', device.name);
+
+      const servicesUuids = await BleClient.getServices(device.deviceId);
+      console.log('Services:', servicesUuids);
+
+      //this.serviceUuid = servicesUuids.services[0].uuid; 
+      //this.characteristicUuid = servicesUuids.services[0].characteristics[0].uuid;      
+
+    } catch (error) {
+      console.error('Error connecting to device', error);
+    }
+  }
+
+  async disconnectDevice() {
+    if (this.connectedDevice) {
+      await BleClient.disconnect(this.connectedDevice.deviceId);
+      console.log('Disconnected from', this.connectedDevice.name);
+      this.connectedDevice = null;
+      window.location.reload();
+    } else {
+      console.warn('No device connected');
+    }
+  }
+
+  async sendData(data: string) {
+    if (!this.connectedDevice) {
+      console.error('No connected device');
+      return;
+    }
+
+    try {
+      const buffer = new TextEncoder().encode(data).buffer;
+      const dataView = new DataView(buffer);
+
+      await BleClient.write(
+        this.connectedDevice.deviceId,
+        this.serviceUuid,
+        this.characteristicUuid,
+        dataView
+      );
+
+      const response: any = await BleClient.read(
+        this.connectedDevice.deviceId,
+        this.serviceUuid,
+        this.characteristicUuid,
+      );
+
+      console.log('Response from ESP32222:',response);
+      const decodedValue = this.decodeData(response);
+      console.log(decodedValue, 'Response from ESP32:',response, response.value);
+      
+      console.log('Data sent successfully');
+    } catch (error) {
+      console.error('Error sending data', error);
+    }
+  }
+
+  decodeData(dataView: DataView): string {
+    const byteArray = new Uint8Array(dataView.buffer);
+    return String.fromCharCode(...byteArray);
+  }
+}

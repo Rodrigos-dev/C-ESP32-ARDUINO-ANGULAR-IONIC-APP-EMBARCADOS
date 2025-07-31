@@ -1,0 +1,73 @@
+CODIGO
+
+
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
+BLEServer *pServer = NULL;
+BLECharacteristic *pCharacteristic;
+bool deviceConnected = false;
+
+class MyServerCallbacks : public BLEServerCallbacks {  
+
+  void onConnect(BLEServer* pServer) {
+    deviceConnected = true;
+    Serial.println("Device connected");   
+  }
+
+  void onDisconnect(BLEServer* pServer) {
+    deviceConnected = false;
+    Serial.println("Device disconnected");
+  }
+};
+
+class MyCallbacks : public BLECharacteristicCallbacks {									// ESSA AKI A QUE RECEBE OS DADOS POR EXEMP´LO UMA STRING
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    Serial.println("aaaaaaa");  // Indicador que a função onWrite foi chamada
+    std::string value = pCharacteristic->getValue().c_str();
+    if (value.length() > 0) {
+      Serial.print("Received value: ");
+      Serial.println(String(value.c_str()));
+    }
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+  
+  BLEDevice::init("ESP32_BLEE");
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  BLEService *pService = pServer->createService(BLEUUID("4fafc201-1fb5-459e-8fcc-c5c9c331914b"));
+
+  pCharacteristic = pService->createCharacteristic(
+                      BLEUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8"),
+                      BLECharacteristic::PROPERTY_READ |
+                      BLECharacteristic::PROPERTY_WRITE |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  //pCharacteristic->addDescriptor(new BLE2902());
+  pCharacteristic->setCallbacks(new MyCallbacks());
+
+  pService->start();
+  BLEAdvertising *pAdvertising = pServer->getAdvertising();
+  pAdvertising->start();
+  
+  Serial.println("Waiting for a connection...");
+}
+
+void loop() {
+  if (deviceConnected) {
+    pCharacteristic->setValue("Hello from ESP32");
+    pCharacteristic->notify();
+    //Serial.println("Sent: Hello from ESP32");
+    delay(1000); // Altere conforme necessário
+  }
+
+  // Do other tasks if needed
+}

@@ -1,0 +1,91 @@
+<!-- <ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>wifi-test</ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<ion-content [fullscreen]="true">
+  <!-- <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">wifi-test</ion-title>
+    </ion-toolbar>
+  </ion-header> -->
+
+  <!-- Container para controlar o tamanho máximo da página -->
+  <div style="max-width: 600px; margin: 0 auto; padding: 16px; margin-top: 20px">
+    <!-- Input com botão para limpar -->
+    <div style="display: flex; align-items: center; margin-bottom: 16px;">
+      <ion-input 
+  placeholder="Digite o Ip..." 
+  [(ngModel)]="inputText"
+  style="
+    --border-radius: 6px;
+    --border-width: 1px;
+    --border-color: #d3d3d3;
+    border: 1px solid #d3d3d3;
+    border-radius: 8px;
+    padding: 8px;    
+    --padding-start: 12px; /* Adiciona padding no início (lado esquerdo) */
+    --padding-end: 12px;   /* Adiciona padding no fim (lado direito) */
+  "
+></ion-input>
+
+      <ion-button (click)="clearInput()" style="margin-left: 8px;">Limpar</ion-button>
+    </div>
+
+    <!-- Botão 1 com lâmpada -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <ion-button expand="block" (click)="toggleLight('on')" style="flex-grow: 1;">
+        on
+      </ion-button>
+      <ion-icon [name]="lights['on'] ? 'bulb' : 'bulb-outline'" [style.color]="lights['on'] ? 'yellow' : 'black'"
+        style="font-size: 24px; margin-left: 8px;"></ion-icon>
+    </div>
+
+    <!-- Botão 2 com lâmpada -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <ion-button expand="block" (click)="toggleLight('off')" style="flex-grow: 1;">
+        off
+      </ion-button>
+      <ion-icon [name]="lights['off'] ? 'bulb' : 'bulb-outline'" [style.color]="lights['off'] ? 'yellow' : 'black'"
+        style="font-size: 24px; margin-left: 8px;"></ion-icon>
+    </div>
+
+    <!-- Botão 3 com lâmpada -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <ion-button expand="block" (click)="toggleLight('blink')" style="flex-grow: 1;">
+        blink
+      </ion-button>
+      <ion-icon [name]="lights['blink'] ? 'bulb' : 'bulb-outline'" [style.color]="lights['blink'] ? 'yellow' : 'black'"
+        style="font-size: 24px; margin-left: 8px;"></ion-icon>
+    </div>
+
+    <!-- Botão 4 com lâmpada -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <ion-button expand="block" (click)="toggleLight('close')" style="flex-grow: 1;">
+        close
+      </ion-button>
+      <ion-icon [name]="lights['close'] ? 'bulb' : 'bulb-outline'" [style.color]="lights['close'] ? 'yellow' : 'black'"
+        style="font-size: 24px; margin-left: 8px;"></ion-icon>
+    </div>
+
+    <!-- Botão 5 com lâmpada -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <ion-button expand="block" (click)="toggleLight('status')" style="flex-grow: 1;">
+        status
+      </ion-button>
+      <ion-icon [name]="lights['status'] ? 'bulb' : 'bulb-outline'"
+        [style.color]="lights['status'] ? 'yellow' : 'black'" style="font-size: 24px; margin-left: 8px;"></ion-icon>
+    </div>   
+
+    <!-- Botão 5 com lâmpada -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 35px;">
+      <ion-button expand="block" (click)="toggleLight('test-esp-casa')" style="flex-grow: 1;">
+        test-esp-casa
+      </ion-button>
+      <ion-icon [name]="lights['test-esp-casa'] ? 'bulb' : 'bulb-outline'"
+        [style.color]="lights['test-esp-casa'] ? 'yellow' : 'black'" style="font-size: 24px; margin-left: 8px;"></ion-icon>
+    </div>  
+
+  </div>
+</ion-content>

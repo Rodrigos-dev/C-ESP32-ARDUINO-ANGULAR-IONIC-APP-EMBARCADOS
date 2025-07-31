@@ -1,0 +1,7 @@
+{
+  "name": "wifi-esp-ionic-cors",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

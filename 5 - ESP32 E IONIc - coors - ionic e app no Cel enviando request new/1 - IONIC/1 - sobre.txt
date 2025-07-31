@@ -1,0 +1,25 @@
+
+
+funcionando o projeto com 5 botões quando clico a lampada acende ou apaga
+
+para testar esp32 
+
+o projeto esp32 meu que esta no arquivo tem os endpoints diferentes do que estão no ionic
+
+então caso precise lembre de trocar
+
+
+o ip do esp imprimi no monitor do esp na ide Arduino 
+
+e os endpoints => exemplo co o ip da esp pego http://numero ip esp/dadosA
+
+
+if (method == "GET" && path == "/fullDados") {
+            handleGetFullDados(client);
+          } else if (method == "GET" && path == "/dadosA") {
+            handleGetDadosA(client);
+          } else if (method == "POST" && path == "/login") {
+            handlePostDados(client, currentLine);
+          } else if (method == "GET" && path == "/externalData") {
+            getDataFromExternalAPI(client);            
+          }  

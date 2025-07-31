@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Bluetooth Example
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-button (click)="scanDevices()">Scan Devices</ion-button>
+  <ion-list>
+    <ion-item *ngFor="let device of devices">
+      {{ device.name || 'Unnamed device' }} ({{ device.deviceId }})
+      <ion-button (click)="connectToDevice(device)" slot="end">Connect</ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-button (click)="sendData('1')">Send '1'</ion-button>
+  <ion-button (click)="sendData('2')">Send '2'</ion-button>
+
+  <ion-button (click)="disconnectDevice()" expand="block" color="danger">Disconnect</ion-button>
+</ion-content>
